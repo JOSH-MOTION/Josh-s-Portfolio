@@ -1,0 +1,7 @@
+{
+  "name": "AuraFolio - AI-Powered Portfolio",
+  "description": "A cutting-edge developer portfolio featuring a digital twin AI assistant, interactive project showcases, and real-time skill visualizations.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
