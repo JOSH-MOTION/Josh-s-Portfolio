@@ -9,18 +9,22 @@ import SkillsVisualizer from './components/SkillsVisualizer';
 import DigitalTwinChat from './components/DigitalTwinChat';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
-import ProjectDetailView from './components/ProjectDetailView';
-import ResumeView from './components/ResumeView';
-import ContactView from './components/ContactView';
-import WorkListView from './components/WorkListView';
+import { useRouter } from 'next/navigation';
 
 export type ViewState = 'home' | 'work-list' | 'project-detail' | 'resume' | 'contact' | 'about';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('home');
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [localTime, setLocalTime] = useState('');
+  
+  // Safe router access
+  let router: any = null;
+  try {
+    router = useRouter();
+  } catch (e) {
+    // Silently fail, handled in navigate calls
+  }
 
   useEffect(() => {
     const updateTime = () => {
@@ -39,33 +43,51 @@ export default function App() {
   }, []);
 
   const navigateToProject = (id: string) => {
-    setSelectedProjectId(id);
-    setCurrentView('project-detail');
-    window.scrollTo(0, 0);
+    if (router) {
+      router.push(`/work/${id}`);
+    } else {
+      window.location.href = `/work/${id}`;
+    }
   };
 
   const navigateToWorkList = () => {
-    setCurrentView('work-list');
-    window.scrollTo(0, 0);
+    if (router) {
+      router.push('/work');
+    } else {
+      window.location.href = '/work';
+    }
   };
 
-  const renderContent = () => {
-    if (currentView === 'project-detail' && selectedProjectId) {
-      return <ProjectDetailView projectId={selectedProjectId} onBack={() => setCurrentView('work-list')} />;
+  const handleSetView = (view: ViewState) => {
+    if (view === 'resume') {
+       if (router) router.push('/resume');
+       else window.location.href = '/resume';
+    } else if (view === 'work-list') {
+       if (router) router.push('/work');
+       else window.location.href = '/work';
+    } else if (view === 'contact') {
+       const el = document.getElementById('contact');
+       if (el) el.scrollIntoView({ behavior: 'smooth' });
+       setCurrentView('home');
+    } else {
+       setCurrentView(view);
     }
-    if (currentView === 'work-list') {
-      return <WorkListView onProjectClick={navigateToProject} onBack={() => setCurrentView('home')} />;
-    }
-    if (currentView === 'resume') {
-      return <ResumeView onBack={() => setCurrentView('home')} />;
-    }
-    if (currentView === 'contact') {
-      return <ContactView onBack={() => setCurrentView('home')} />;
-    }
+  };
 
-    return (
-      <>
-        <Hero onOpenChat={() => setIsChatOpen(true)} onExplore={navigateToWorkList} localTime={localTime} />
+  return (
+    <div className="min-h-screen">
+      <Navbar 
+        onOpenChat={() => setIsChatOpen(true)} 
+        setView={handleSetView} 
+        currentView={currentView} 
+      />
+      
+      <main className="relative">
+        <Hero 
+          onOpenChat={() => setIsChatOpen(true)} 
+          onExplore={navigateToWorkList} 
+          localTime={localTime} 
+        />
         
         <section id="work" className="py-32 px-6 md:px-12 lg:px-24">
           <div className="max-w-7xl mx-auto">
@@ -136,7 +158,7 @@ export default function App() {
                       </div>
                    </div>
                    <button 
-                     onClick={() => setCurrentView('resume')}
+                     onClick={() => handleSetView('resume')}
                      className="mt-12 group flex items-center gap-4 text-blue-600 font-black uppercase tracking-widest text-[10px] hover:gap-6 transition-all"
                    >
                      View Professional CV <span>→</span>
@@ -146,21 +168,7 @@ export default function App() {
           </div>
         </section>
 
-        <ContactSection onContactClick={() => setCurrentView('contact')} />
-      </>
-    );
-  };
-
-  return (
-    <div className="min-h-screen">
-      <Navbar 
-        onOpenChat={() => setIsChatOpen(true)} 
-        setView={setCurrentView} 
-        currentView={currentView} 
-      />
-      
-      <main className="relative">
-        {renderContent()}
+        <ContactSection onContactClick={() => handleSetView('contact')} />
       </main>
 
       <Footer />
