@@ -36,4 +36,9 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-blue-600;
   }
+
+  /* Custom terminal text glow */
+  .terminal-glow {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  }
 }
