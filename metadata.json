@@ -1,7 +1,5 @@
 {
-  "name": "AuraFolio - AI-Powered Portfolio",
-  "description": "A cutting-edge developer portfolio featuring a digital twin AI assistant, interactive project showcases, and real-time skill visualizations.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
+  "name": "Joshua Doe | Digital Twin Portfolio",
+  "description": "A high-performance developer portfolio for Joshua Doe, featuring an AI Twin assistant.",
+  "requestFramePermissions": []
 }
