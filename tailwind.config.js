@@ -1,9 +1,10 @@
 
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -11,7 +12,20 @@ export default {
         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
+      colors: {
+        background: '#050505',
+        foreground: '#ffffff',
+      },
+      animation: {
+        'scanline': 'scanline 10s linear infinite',
+      },
+      keyframes: {
+        scanline: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100%)' },
+        },
+      },
     },
   },
   plugins: [],
-}
+};

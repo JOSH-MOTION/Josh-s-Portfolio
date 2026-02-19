@@ -5,12 +5,12 @@
 
 @layer base {
   :root {
-    --background: #F9FAFB;
-    --foreground: #111827;
+    --background: #050505;
+    --foreground: #ffffff;
   }
   
   body {
-    @apply bg-[#F9FAFB] text-[#111827] antialiased scroll-smooth;
+    @apply bg-[#050505] text-white antialiased overflow-x-hidden selection:bg-blue-500/30 selection:text-white;
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
 }
@@ -21,24 +21,37 @@
   }
   
   .obsidian-glass {
-    @apply bg-white/70 backdrop-blur-2xl border border-black/5;
+    @apply bg-black/40 backdrop-blur-2xl border border-white/10;
   }
 
   ::-webkit-scrollbar {
     @apply w-[6px];
   }
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-[#0A0A0B];
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
+    @apply bg-white/10 rounded-full transition-colors;
   }
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-blue-600;
   }
 
-  /* Custom terminal text glow */
   .terminal-glow {
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
   }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Custom transitions for a premium feel */
+.page-transition {
+  @apply transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)];
 }

@@ -33,75 +33,69 @@ const DigitalTwinChat: React.FC<DigitalTwinChatProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      // In production/deployment, process.env.API_KEY is handled by the platform
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Corrected: Use direct process.env.API_KEY for initialization as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userMessage,
         config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
+          systemInstruction: SYSTEM_INSTRUCTION + "\nYou are a technical assistant. Keep responses professional, efficient, and slightly minimalist.",
         },
       });
 
-      const aiResponse = response.text || "I'm having trouble connecting right now. Please try again.";
+      // Corrected: Access .text property directly (not as a method)
+      const aiResponse = response.text || "ERR :: TIMEOUT. Please re-enter command.";
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
     } catch (error) {
-      console.error("Gemini API Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "SYSTEM ERROR :: Connection to Digital Twin lost. Ensure your project is correctly configured." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "ERR :: NETWORK_FAILURE. Manual override required." }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
       
-      <div className="relative w-full max-w-2xl bg-[#0F0F11] border border-white/10 rounded-2xl shadow-2xl flex flex-col h-[85vh] md:h-[75vh] overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-[#161618]">
-          <div className="flex items-center gap-3">
-             <div className="flex gap-1.5">
-               <div className="w-3 h-3 rounded-full bg-red-500/80" />
-               <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-               <div className="w-3 h-3 rounded-full bg-green-500/80" />
-             </div>
-             <span className="mono text-[10px] text-white/40 uppercase tracking-[0.3em] ml-4 font-bold">Terminal — ai-twin-v1.sh</span>
+      <div className="relative w-full max-w-2xl bg-[#0F0F11] border border-white/10 rounded-xl shadow-2xl flex flex-col h-[70vh] overflow-hidden">
+        <div className="px-8 py-5 border-b border-white/5 flex items-center justify-between bg-[#161618]">
+          <div className="flex items-center gap-4">
+             <div className="w-3 h-3 rounded-full bg-red-500/50" />
+             <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+             <div className="w-3 h-3 rounded-full bg-green-500/50" />
+             <span className="mono text-[10px] text-white/40 uppercase tracking-[0.2em] ml-4">Terminal — AI.Twin.sh</span>
           </div>
-          <button onClick={onClose} className="text-white/20 hover:text-white transition-colors p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <button onClick={onClose} className="text-white/20 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 mono scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 mono">
           {messages.map((msg, i) => (
-            <div key={i} className="flex flex-col gap-3">
-              <span className={`text-[9px] uppercase font-black tracking-[0.3em] ${msg.role === 'user' ? 'text-blue-500' : 'text-green-500'}`}>
-                {msg.role === 'user' ? '[USER]' : '[AI_TWIN]'}
+            <div key={i} className="flex gap-4">
+              <span className={`text-[10px] uppercase font-bold ${msg.role === 'user' ? 'text-blue-500' : 'text-green-500'}`}>
+                {msg.role === 'user' ? '[USER]' : '[AI]'}
               </span>
-              <p className="text-sm text-white/90 leading-relaxed max-w-full bg-white/[0.03] p-5 rounded-2xl border border-white/5 shadow-inner">
+              <p className="text-sm text-white/80 leading-relaxed max-w-[90%]">
                 {msg.content}
               </p>
             </div>
           ))}
           {isLoading && (
-             <div className="flex items-center gap-4 text-blue-500/60 text-[10px] mono font-bold italic animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                ANALYZING_INPUT...
-             </div>
+             <div className="text-white/20 text-xs animate-pulse">Processing request...</div>
           )}
         </div>
 
-        <form onSubmit={handleSendMessage} className="p-6 md:p-8 bg-[#161618] border-t border-white/5 flex gap-4 items-center">
-          <span className="text-blue-500 mono text-lg font-bold">➜</span>
+        <form onSubmit={handleSendMessage} className="p-6 bg-[#161618] border-t border-white/5 flex gap-4">
+          <span className="text-green-500 mono text-sm">$</span>
           <input 
             type="text" 
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Query Joshua's experience or tech stack..."
-            className="flex-1 bg-transparent text-sm mono focus:outline-none text-white placeholder:text-white/10"
+            placeholder="Type your command..."
+            className="flex-1 bg-transparent text-sm mono focus:outline-none text-white"
             autoFocus
           />
-          <button type="submit" className="hidden" />
         </form>
       </div>
     </div>
