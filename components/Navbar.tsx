@@ -13,34 +13,35 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onOpenChat, setView, currentView }) => {
   const [scrolled, setScrolled] = useState(false);
+  const [path, setPath] = useState('/');
   
-  let pathname = '/';
+  // Safe hook access: Next.js hooks must be wrapped to avoid crashing in non-Next environments
   let router: any = null;
-  
+  let nextPathname: string | null = null;
+
   try {
-    const nextPathname = usePathname();
-    const nextRouter = useRouter();
-    pathname = nextPathname || '/';
-    router = nextRouter;
+    // These only work inside Next.js App Router
+    nextPathname = usePathname();
+    router = useRouter();
   } catch (e) {
-    if (typeof window !== 'undefined') {
-      pathname = window.location.pathname;
-    }
+    // Not in Next.js environment
   }
 
   useEffect(() => {
+    if (nextPathname) setPath(nextPathname);
+    else if (typeof window !== 'undefined') setPath(window.location.pathname);
+
     const handleScroll = () => setScrolled(window.scrollY > 100);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [nextPathname]);
 
-  // We are on a "Dark Section" if we are at the top of the Home page (Hero section)
-  const isOverDarkHero = (pathname === '/' || currentView === 'home') && !scrolled;
+  const isOverDarkHero = (path === '/' || currentView === 'home') && !scrolled;
   const isDark = isOverDarkHero;
 
-  const navigate = (path: string, view: ViewState, e: React.MouseEvent) => {
-    if (path.startsWith('/#') && (pathname === '/' || !pathname || pathname === 'index.html')) {
-      const id = path.split('#')[1];
+  const navigate = (newPath: string, view: ViewState, e: React.MouseEvent) => {
+    if (newPath.startsWith('/#') && (path === '/' || path === '' || path === '/index.html')) {
+      const id = newPath.split('#')[1];
       const el = document.getElementById(id);
       if (el) {
         e.preventDefault();
@@ -51,18 +52,23 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenChat, setView, currentView }) => 
     }
 
     if (router) {
-      router.push(path);
+      try {
+        router.push(newPath);
+      } catch (e) {
+        window.history.pushState({}, '', newPath);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }
     } else {
-      window.history.pushState({}, '', path);
+      window.history.pushState({}, '', newPath);
       window.dispatchEvent(new PopStateEvent('popstate'));
     }
 
     if (setView) setView(view);
   };
 
-  const isActive = (path: string) => {
-    if (path === '/' && pathname === '/') return true;
-    if (path !== '/' && pathname?.startsWith(path)) return true;
+  const isActive = (targetPath: string) => {
+    if (targetPath === '/' && path === '/') return true;
+    if (targetPath !== '/' && path?.startsWith(targetPath)) return true;
     return false;
   };
 

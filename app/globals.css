@@ -5,12 +5,14 @@
 
 @layer base {
   :root {
-    --background: #F9FAFB;
-    --foreground: #111827;
+    --background: 249 250 251; /* #F9FAFB */
+    --foreground: 17 24 39;    /* #111827 */
   }
   
   body {
-    @apply bg-[#F9FAFB] text-[#111827] antialiased overflow-x-hidden selection:bg-blue-600/10 selection:text-blue-600;
+    background-color: #F9FAFB !important;
+    color: #111827 !important;
+    @apply antialiased overflow-x-hidden selection:bg-blue-600/10 selection:text-blue-600;
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
 }

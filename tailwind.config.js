@@ -13,8 +13,12 @@ module.exports = {
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
-        background: '#050505',
-        foreground: '#ffffff',
+        // Removed global 'background' override to prevent it from poisoning light sections
+        brand: {
+          dark: '#050505',
+          light: '#F9FAFB',
+          blue: '#2563EB',
+        }
       },
       animation: {
         'scanline': 'scanline 10s linear infinite',
