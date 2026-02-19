@@ -9,12 +9,17 @@ import SkillsVisualizer from './components/SkillsVisualizer';
 import DigitalTwinChat from './components/DigitalTwinChat';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
+import ProjectDetailView from './components/ProjectDetailView';
+import WorkListView from './components/WorkListView';
+import ResumeView from './components/ResumeView';
+import ContactView from './components/ContactView';
 import { useRouter } from 'next/navigation';
 
 export type ViewState = 'home' | 'work-list' | 'project-detail' | 'resume' | 'contact' | 'about';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('home');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [localTime, setLocalTime] = useState('');
   
@@ -23,8 +28,38 @@ export default function App() {
   try {
     router = useRouter();
   } catch (e) {
-    // Silently fail, handled in navigate calls
+    // useRouter failed, we'll fall back to internal routing logic
   }
+
+  // Handle Internal Routing for non-Next environments (e.g., when serving index.html)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
+      
+      if (path === '/' || path === '' || path.includes('index.html')) {
+        setCurrentView('home');
+      } else if (path === '/work' || path === '/work/') {
+        setCurrentView('work-list');
+      } else if (path.startsWith('/work/')) {
+        const id = path.split('/work/')[1];
+        if (id) {
+          setSelectedProjectId(id);
+          setCurrentView('project-detail');
+        }
+      } else if (path === '/resume' || path === '/resume/') {
+        setCurrentView('resume');
+      } else if (path === '/contact' || path === '/contact/') {
+        setCurrentView('contact');
+      }
+    };
+
+    // Initial check
+    handleLocationChange();
+
+    // Listen for popstate (back/forward or manual history push)
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -43,34 +78,144 @@ export default function App() {
   }, []);
 
   const navigateToProject = (id: string) => {
+    setSelectedProjectId(id);
+    setCurrentView('project-detail');
+    const path = `/work/${id}`;
     if (router) {
-      router.push(`/work/${id}`);
+      router.push(path);
     } else {
-      window.location.href = `/work/${id}`;
+      window.history.pushState({}, '', path);
     }
   };
 
   const navigateToWorkList = () => {
+    setCurrentView('work-list');
+    const path = '/work';
     if (router) {
-      router.push('/work');
+      router.push(path);
     } else {
-      window.location.href = '/work';
+      window.history.pushState({}, '', path);
     }
   };
 
-  const handleSetView = (view: ViewState) => {
-    if (view === 'resume') {
-       if (router) router.push('/resume');
-       else window.location.href = '/resume';
-    } else if (view === 'work-list') {
-       if (router) router.push('/work');
-       else window.location.href = '/work';
-    } else if (view === 'contact') {
-       const el = document.getElementById('contact');
-       if (el) el.scrollIntoView({ behavior: 'smooth' });
-       setCurrentView('home');
+  const handleBack = () => {
+    setCurrentView('home');
+    if (router) {
+      router.push('/');
     } else {
-       setCurrentView(view);
+      window.history.pushState({}, '', '/');
+    }
+  };
+
+  const renderContent = () => {
+    switch (currentView) {
+      case 'work-list':
+        return <WorkListView onProjectClick={navigateToProject} onBack={handleBack} />;
+      case 'project-detail':
+        return <ProjectDetailView projectId={selectedProjectId || ''} onBack={navigateToWorkList} />;
+      case 'resume':
+        return <ResumeView onBack={handleBack} />;
+      case 'contact':
+        return <ContactView onBack={handleBack} />;
+      default:
+        return (
+          <>
+            <Hero 
+              onOpenChat={() => setIsChatOpen(true)} 
+              onExplore={navigateToWorkList} 
+              localTime={localTime} 
+            />
+            
+            <section id="work" className="py-32 px-6 md:px-12 lg:px-24">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col mb-20">
+                  <span className="mono text-blue-600 text-xs font-bold tracking-[0.3em] uppercase mb-4">
+                    01 // Selected Projects
+                  </span>
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <h2 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-gray-900 uppercase">
+                      Solutions built <br /> with <span className="text-blue-600/40 italic">precision.</span>
+                    </h2>
+                    <button 
+                      onClick={navigateToWorkList}
+                      className="group flex items-center gap-4 text-blue-600 font-black uppercase tracking-widest text-[10px] hover:gap-6 transition-all"
+                    >
+                      View Full Gallery <span>→</span>
+                    </button>
+                  </div>
+                </div>
+                <ProjectsGrid onProjectClick={navigateToProject} />
+              </div>
+            </section>
+
+            <section id="skills" className="py-32 px-6 md:px-12 lg:px-24 bg-white border-y border-gray-100">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col mb-20 text-center items-center">
+                  <span className="mono text-blue-600 text-xs font-bold tracking-[0.3em] uppercase mb-4">
+                    02 // Proficiency
+                  </span>
+                  <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6 text-gray-900 uppercase">
+                    The Tech Stack
+                  </h2>
+                  <div className="w-12 h-0.5 bg-blue-600/20 mb-8" />
+                </div>
+                <SkillsVisualizer />
+              </div>
+            </section>
+
+            <section id="about" className="py-32 px-6 md:px-12 lg:px-24">
+              <div className="max-w-7xl mx-auto">
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <div className="relative group overflow-hidden rounded-2xl shadow-xl shadow-blue-500/10 transition-shadow hover:shadow-2xl">
+                       <img 
+                         src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1200" 
+                         alt="Dev Environment" 
+                         className="w-full aspect-square object-cover transition-all duration-700 group-hover:scale-105"
+                       />
+                       <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
+                       <div className="absolute bottom-10 left-10 text-white">
+                          <div className="mono text-[10px] text-blue-400 uppercase mb-2">Location</div>
+                          <div className="text-2xl font-bold italic">Accra, Ghana</div>
+                       </div>
+                    </div>
+                    <div>
+                       <span className="mono text-blue-600 text-xs font-bold tracking-[0.3em] uppercase mb-6 block">03 // Background</span>
+                       <h2 className="text-5xl font-extrabold tracking-tighter mb-8 leading-none text-gray-900 text-balance uppercase">Doe Joshua.</h2>
+                       <p className="text-lg text-gray-600 font-medium leading-relaxed mb-8">
+                         I&apos;m a passionate software developer with 4 years of experience building visually appealing interfaces and scalable backends. Based in Accra, I specialize in the React ecosystem and high-performance server logic.
+                       </p>
+                       <div className="grid grid-cols-2 gap-8 py-8 border-y border-gray-100">
+                          <div>
+                             <div className="text-3xl font-bold mb-1 text-gray-900">4+</div>
+                             <div className="mono text-[10px] text-gray-400 uppercase tracking-widest">Years Experience</div>
+                          </div>
+                          <div>
+                             <div className="text-3xl font-bold mb-1 text-gray-900">6+</div>
+                             <div className="mono text-[10px] text-gray-400 uppercase tracking-widest">Active Projects</div>
+                          </div>
+                       </div>
+                       <button 
+                         onClick={() => {
+                           setCurrentView('resume');
+                           if (router) router.push('/resume');
+                           else window.history.pushState({}, '', '/resume');
+                         }}
+                         className="mt-12 group flex items-center gap-4 text-blue-600 font-black uppercase tracking-widest text-[10px] hover:gap-6 transition-all"
+                       >
+                         View Professional CV <span>→</span>
+                       </button>
+                    </div>
+                 </div>
+              </div>
+            </section>
+
+            <ContactSection onContactClick={() => {
+               setCurrentView('contact');
+               if (router) router.push('/contact');
+               else window.history.pushState({}, '', '/contact');
+            }} />
+          </>
+        );
     }
   };
 
@@ -78,97 +223,12 @@ export default function App() {
     <div className="min-h-screen">
       <Navbar 
         onOpenChat={() => setIsChatOpen(true)} 
-        setView={handleSetView} 
+        setView={setCurrentView} 
         currentView={currentView} 
       />
       
       <main className="relative">
-        <Hero 
-          onOpenChat={() => setIsChatOpen(true)} 
-          onExplore={navigateToWorkList} 
-          localTime={localTime} 
-        />
-        
-        <section id="work" className="py-32 px-6 md:px-12 lg:px-24">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col mb-20">
-              <span className="mono text-blue-600 text-xs font-bold tracking-[0.3em] uppercase mb-4">
-                01 // Selected Projects
-              </span>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <h2 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-gray-900">
-                  Solutions built <br /> with <span className="text-blue-600/40">precision.</span>
-                </h2>
-                <button 
-                  onClick={navigateToWorkList}
-                  className="group flex items-center gap-4 text-blue-600 font-black uppercase tracking-widest text-[10px] hover:gap-6 transition-all"
-                >
-                  View Full Gallery <span>→</span>
-                </button>
-              </div>
-            </div>
-            <ProjectsGrid onProjectClick={navigateToProject} />
-          </div>
-        </section>
-
-        <section id="skills" className="py-32 px-6 md:px-12 lg:px-24 bg-white border-y border-gray-100">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col mb-20 text-center items-center">
-              <span className="mono text-blue-600 text-xs font-bold tracking-[0.3em] uppercase mb-4">
-                02 // Proficiency
-              </span>
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6 text-gray-900">
-                The Tech Stack
-              </h2>
-              <div className="w-12 h-0.5 bg-blue-600/20 mb-8" />
-            </div>
-            <SkillsVisualizer />
-          </div>
-        </section>
-
-        <section id="about" className="py-32 px-6 md:px-12 lg:px-24">
-          <div className="max-w-7xl mx-auto">
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                <div className="relative group overflow-hidden rounded-2xl shadow-xl shadow-blue-500/10 transition-shadow hover:shadow-2xl">
-                   <img 
-                     src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1200" 
-                     alt="Dev Environment" 
-                     className="w-full aspect-square object-cover transition-all duration-700 group-hover:scale-105"
-                   />
-                   <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
-                   <div className="absolute bottom-10 left-10 text-white">
-                      <div className="mono text-[10px] text-blue-400 uppercase mb-2">Location</div>
-                      <div className="text-2xl font-bold italic">Accra, Ghana</div>
-                   </div>
-                </div>
-                <div>
-                   <span className="mono text-blue-600 text-xs font-bold tracking-[0.3em] uppercase mb-6 block">03 // Background</span>
-                   <h2 className="text-5xl font-extrabold tracking-tighter mb-8 leading-none text-gray-900 text-balance uppercase">Doe Joshua.</h2>
-                   <p className="text-lg text-gray-600 font-medium leading-relaxed mb-8">
-                     I&apos;m a passionate software developer with 4 years of experience building visually appealing interfaces and scalable backends. Based in Accra, I specialize in the React ecosystem and high-performance server logic.
-                   </p>
-                   <div className="grid grid-cols-2 gap-8 py-8 border-y border-gray-100">
-                      <div>
-                         <div className="text-3xl font-bold mb-1 text-gray-900">4+</div>
-                         <div className="mono text-[10px] text-gray-400 uppercase tracking-widest">Years Experience</div>
-                      </div>
-                      <div>
-                         <div className="text-3xl font-bold mb-1 text-gray-900">6+</div>
-                         <div className="mono text-[10px] text-gray-400 uppercase tracking-widest">Active Projects</div>
-                      </div>
-                   </div>
-                   <button 
-                     onClick={() => handleSetView('resume')}
-                     className="mt-12 group flex items-center gap-4 text-blue-600 font-black uppercase tracking-widest text-[10px] hover:gap-6 transition-all"
-                   >
-                     View Professional CV <span>→</span>
-                   </button>
-                </div>
-             </div>
-          </div>
-        </section>
-
-        <ContactSection onContactClick={() => handleSetView('contact')} />
+        {renderContent()}
       </main>
 
       <Footer />
