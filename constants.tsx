@@ -7,15 +7,30 @@ export const PROJECTS: Project[] = [
     title: 'Brain Works Studio',
     description: 'Official marketing website showcasing portfolio and services for a photography studio. Fully responsive and SEO-friendly.',
     tech: ['Next.js', 'Tailwind CSS', 'JavaScript'],
-    imageUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/images/brain.jpeg',
     link: 'https://brainworksstudioafrica.com'
   },
+  {
+    id: 'w-ghtv',
+    title: 'W-GHTV',
+    description: 'A modern, responsive weather forecasting web application delivering real-time and location-based weather data. Features dynamic search, live API integration, error handling, loading states, and a clean, mobile-first UI built for performance and scalability.',
+    tech: [
+      'React',
+      'Tailwind CSS',
+      'REST API Integration',
+      'Geolocation API',
+      'Responsive Design',
+      'Environment Variables'
+    ],
+    imageUrl: '/images/wise.jpeg',
+  },
+  
   {
     id: 'josh-pay',
     title: 'Josh Pay (Donation App)',
     description: 'Full-stack platform for secure online donations and payments with Paystack integration and real-time tracking.',
     tech: ['Next.js', 'TypeScript', 'Firebase', 'Paystack'],
-    imageUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/images/pay.jpeg',
     link: 'https://josh-pay.vercel.app/'
   },
   {
@@ -23,7 +38,7 @@ export const PROJECTS: Project[] = [
     title: 'BudgetWise (Expense Tracker)',
     description: 'Full-stack platform to track personal expenses with Node.js and MongoDB backend, featuring data visualization charts.',
     tech: ['React', 'Node.js', 'Express.js', 'MongoDB', 'Chart.js'],
-    imageUrl: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/images/budget.jpeg',
     link: 'https://budgetwise-steel.vercel.app/'
   },
   {
@@ -31,9 +46,25 @@ export const PROJECTS: Project[] = [
     title: 'QR Scanner App',
     description: 'Web-based QR code scanner developed for quick scanning and results display using Firebase for fast performance.',
     tech: ['Next.js', 'TypeScript', 'Firebase'],
-    imageUrl: 'https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/images/qr.jpeg',
     link: 'https://qrscanner-lyart.vercel.app/'
   },
+  {
+    id: 'sendora',
+    title: 'Sendora – Digital Receipt & SMS Delivery App',
+    description: 'A mobile application that enables businesses to generate professional digital receipts and instantly send them to customers via SMS. Designed for small and medium-sized enterprises, the app streamlines transaction documentation, improves customer trust, and eliminates manual receipt writing.',
+    tech: [
+      'React Native',
+      'Expo',
+      'Firebase',
+      'SMS API Integration',
+      'Cloud Firestore',
+      'PDF Generation',
+      'Form Validation'
+    ],
+    imageUrl: '/images/sendora.jpeg'
+  },
+  
   {
     id: 'quiz-app',
     title: 'Quiz App (Mobile)',
